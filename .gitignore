@@ -1,0 +1,36 @@
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Local model weights (don't commit gigabytes)
+*.gguf
+*.safetensors
+*.bin
+models/
+
+# kind / kubeconfig exports
+kubeconfig
+*.kubeconfig
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Editor
+.vscode/
+.idea/
+*.swp
