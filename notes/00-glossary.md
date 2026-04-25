@@ -8,7 +8,9 @@ Living doc. Add new terms here *first* when you encounter them; promote to a ful
 - **Context window / context length** — max tokens the model can attend to in one request. Covers input + output combined (usually). Large windows = more memory + slower.
 - **Embedding** — a dense vector (e.g., 1024 floats) representing the "meaning" of a chunk of text. Similar meanings → nearby vectors. Enables RAG.
 - **KV cache** — cached key/value tensors from prior tokens so the model doesn't recompute them for each new token. Dominates GPU memory use at long context lengths.
-- **Quantization** — shrinking model weights from FP16 to INT8/INT4 etc. Trades quality for memory/speed. Common formats: AWQ, GPTQ, FP8, GGUF (Q4_K_M = 4-bit, "medium" variant).
+- **Quantization** — shrinking model weights from FP16 to INT8/INT4 etc. Trades quality for memory/speed. Common formats: AWQ, GPTQ, FP8, GGUF (Q4_K_M = 4-bit, "medium" variant). Deep dive: [gguf-quantization.md](./gguf-quantization.md).
+- **GGUF** — single-file model format used by llama.cpp. Contains quantized weights + tokenizer + metadata. Replaced older GGML. Runs on CPU (and GPU via CUDA/Metal). The format you pull off HuggingFace for llama.cpp-style serving. Deep dive: [gguf-quantization.md](./gguf-quantization.md).
+- **OpenAI-compatible API** — the de-facto REST interface for LLMs: `/v1/models`, `/v1/chat/completions`, `/v1/embeddings`, SSE streaming via `stream:true`. llama.cpp, vLLM, TGI, Ollama, LiteLLM all speak it — so clients are portable across backends. This swap-ability is the whole premise of a model gateway (Phase 3).
 
 ## Serving & latency
 

@@ -31,7 +31,8 @@ This folder is the **primary artifact** of the Helios project, not a side effect
 
 ### Topic notes
 - [00 — Glossary](./00-glossary.md)
-- `01-vllm.md` (Phase 1)
+- [01 — Inference serving (llama.cpp, Phase 1a scaffold — renames to `01-vllm.md` after Phase 1d)](./01-inference-serving.md)
+  - [GGUF & quantization](./gguf-quantization.md) — reference, cross-cuts phases
 - `02-kserve.md` (Phase 1)
 - `03-gpu-scheduling.md` (Phase 2)
 - `04-litellm.md` (Phase 3)
