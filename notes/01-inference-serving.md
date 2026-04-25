@@ -57,6 +57,27 @@ curl -sN -o /dev/null \
 
 Reference points for later comparison: Phase 1b will run the same image in kind (expect same numbers + container overhead). Phase 1d runs Llama-3.1-8B on an A10 — TTFT should stay similar for small prompts, but throughput under concurrency will be in a different league thanks to PagedAttention + continuous batching.
 
+## Phase 1b — same server, in kind as a Deployment
+
+Manifest: [../platform/serving/llama-cpp-deployment.yaml](../platform/serving/llama-cpp-deployment.yaml). Namespace `helios`, NodePort 30080, model mounted from the kind node's `/models` via `hostPath`.
+
+Numbers (1× control-plane kind cluster, image and model already cached on the node):
+- `kubectl rollout status` deploy → Ready: **~12 s**
+- Pod delete → replacement pod Ready: **~12 s**
+
+Both endpoints work: `localhost:30080/v1/models` (NodePort) and `kubectl port-forward svc/llama-cpp 8088:8080`.
+
+### Why `hostPath` is dev-only (and what to do in prod)
+`hostPath` ties the pod to one specific node — a 5 GB GGUF baked into one node doesn't migrate, doesn't scale, doesn't survive a node replacement. Two production-grade alternatives:
+1. **PVC with `ReadOnlyMany`** (e.g., EFS/FSx on AWS, NFS, Azure Files) — model weights live on shared storage; any pod on any node mounts the same volume read-only. Slow first-load, simple ops.
+2. **Init-container pulls from S3** (or HF hub) into an `emptyDir` at pod start — node-local for fast subsequent reads, but every cold start pays the download. Pair with image preloading or a sidecar puller cache.
+
+KServe (Phase 1c) leans on the second pattern via its `storageUri` abstraction. Phase 2's GPU node group will probably want option 1 to avoid re-downloading 16 GB weights per pod start.
+
+### Gotchas hit
+- `hostPath` with `type: Directory` requires the dir to **already exist on the node**. `docker cp` to a non-existent dest path doesn't auto-create the parent — `docker exec helios-control-plane mkdir -p /models` first, then `docker cp`. Skipping the `mkdir` produces a confusing "Successfully copied / Could not find /models" pair.
+- First `kubectl apply` will sit in `ImagePullBackOff` for a while as the kind node pulls `ghcr.io/ggml-org/llama.cpp:server`. Patience, not panic.
+
 ## Gotchas (from the PHASE_1.md checklist + what to watch for)
 - **Port 8080 already in use** → map a different host port (`-p 8088:8080`).
 - **HF download stalls** → `curl -C -` to resume.
