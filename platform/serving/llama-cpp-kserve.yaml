@@ -1,0 +1,50 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: llama
+  namespace: helios
+  annotations:
+    serving.kserve.io/deploymentMode: "Serverless"
+spec:
+  predictor:
+    minReplicas: 0
+    maxReplicas: 2
+    scaleTarget: 1
+    scaleMetric: concurrency
+    containers:
+      - name: kserve-container
+        image: ghcr.io/ggml-org/llama.cpp:server
+        args:
+          - "-m"
+          - "/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+          - "--host"
+          - "0.0.0.0"
+          - "--port"
+          - "8080"
+          - "-c"
+          - "4096"
+        ports:
+          - name: http1
+            containerPort: 8080
+            protocol: TCP
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        readinessProbe:
+          httpGet:
+            path: /v1/models
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        volumeMounts:
+          - name: models
+            mountPath: /models
+    volumes:
+      - name: models
+        hostPath:
+          path: /models
+          type: Directory
