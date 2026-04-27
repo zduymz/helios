@@ -21,6 +21,10 @@ Living doc. Add new terms here *first* when you encounter them; promote to a ful
 - **Speculative decoding** — use a small "draft" model to predict several tokens ahead; big model verifies in one forward pass. Throughput boost if draft is accurate.
 - **Scale-to-zero** — pod count drops to 0 after idle. Next request triggers cold start. Critical for $1/hr GPUs.
 - **Cold start** — time from "request arrives at zero-pod service" → "first token returned". Dominated by model load (10–60s+ for large models).
+- **Concurrency metric** — Knative's default autoscaling signal: in-flight requests per pod. `scaleTarget: N` aims for N concurrent requests per replica. Alternative is `rps`. See [02-kserve.md](./02-kserve.md).
+- **Activator** (Knative) — control-plane component that buffers incoming requests when a service has 0 pods, signals the autoscaler to spin up, then forwards the request once a pod is reachable. The cold-start path.
+- **Queue-proxy** (Knative) — sidecar in every revision pod. Counts in-flight requests for the autoscaler and routes traffic to the user container as soon as its TCP port is open — *not* when kubelet declares the pod `Ready`. Why observed cold start can be much shorter than the readiness probe's `initialDelaySeconds`.
+- **Panic mode** (Knative) — when actual concurrency > 2× target, the autoscaler abandons the stable window and scales aggressively. Causes "two pods for one request" surprises at low `scaleTarget`.
 
 ## RAG
 
@@ -46,3 +50,6 @@ Living doc. Add new terms here *first* when you encounter them; promote to a ful
 - **Gateway** — single HTTP front door for all model calls. Handles routing, fallback, rate limits, spend tracking, caching. Examples: LiteLLM, Portkey.
 - **OTel GenAI semantic conventions** — OpenTelemetry standard attributes for LLM calls: `gen_ai.request.model`, `gen_ai.usage.input_tokens`, etc.
 - **ADR (Architecture Decision Record)** — short doc capturing context + decision + trade-offs for a specific choice. Immutable once accepted.
+- **InferenceService** (KServe CRD) — the standardized "deployed model" resource. Owns one or more of: predictor, transformer, explainer. The unit Backstage scaffolders will template against. See [02-kserve.md](./02-kserve.md).
+- **Predictor / Transformer / Explainer** (KServe) — three optional components of an `InferenceService`. Predictor = the model server (mandatory). Transformer = pre/post-processing container in front of it. Explainer = interpretability sidecar.
+- **KServe deployment modes** — `Serverless` (Knative-backed; gets scale-to-zero + revision traffic split) vs `RawDeployment` (plain `Deployment` + HPA; no Knative). Default is Serverless. Picked via `serving.kserve.io/deploymentMode` annotation.

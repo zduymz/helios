@@ -33,7 +33,7 @@ This folder is the **primary artifact** of the Helios project, not a side effect
 - [00 — Glossary](./00-glossary.md)
 - [01 — Inference serving (llama.cpp, Phase 1a scaffold — renames to `01-vllm.md` after Phase 1d)](./01-inference-serving.md)
   - [GGUF & quantization](./gguf-quantization.md) — reference, cross-cuts phases
-- `02-kserve.md` (Phase 1)
+- [02 — KServe (`InferenceService` on Knative)](./02-kserve.md)
 - `03-gpu-scheduling.md` (Phase 2)
 - `04-litellm.md` (Phase 3)
 - `05-otel-genai.md` (Phase 4)
@@ -44,10 +44,11 @@ This folder is the **primary artifact** of the Helios project, not a side effect
 - `00-platform-thesis.md` (Phase 8, headline)
 
 ### ADRs
-(empty — add as decisions are made)
+- [0001 — KServe `InferenceService` (Serverless) over raw `Deployment`](./decisions/0001-kserve-over-raw-deployment.md)
 
 ### Incidents
 (empty — add as they happen)
 
 ### Daily log
-(empty — start today)
+- [2026-04-24](./log/2026-04-24.md) — Phase 1a (llama.cpp in Docker)
+- [2026-04-25](./log/2026-04-25.md) — Phase 1b + 1c (kind Deployment → KServe `InferenceService`)
